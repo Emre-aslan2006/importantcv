@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Experience } from '@/types/cv';
 import { Plus, Trash2, Briefcase } from 'lucide-react';
 
@@ -37,27 +37,27 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
     onChange(data.filter(exp => exp.id !== id));
   };
 
-  const addAchievement = (expId: string) => {
-    const exp = data.find(e => e.id === expId);
+  const addAchievement = (id: string) => {
+    const exp = data.find(e => e.id === id);
     if (exp) {
-      updateExperience(expId, 'achievements', [...exp.achievements, '']);
+      updateExperience(id, 'achievements', [...exp.achievements, '']);
     }
   };
 
-  const updateAchievement = (expId: string, index: number, value: string) => {
-    const exp = data.find(e => e.id === expId);
+  const updateAchievement = (id: string, index: number, value: string) => {
+    const exp = data.find(e => e.id === id);
     if (exp) {
       const newAchievements = [...exp.achievements];
       newAchievements[index] = value;
-      updateExperience(expId, 'achievements', newAchievements);
+      updateExperience(id, 'achievements', newAchievements);
     }
   };
 
-  const removeAchievement = (expId: string, index: number) => {
-    const exp = data.find(e => e.id === expId);
+  const removeAchievement = (id: string, index: number) => {
+    const exp = data.find(e => e.id === id);
     if (exp && exp.achievements.length > 1) {
       const newAchievements = exp.achievements.filter((_, i) => i !== index);
-      updateExperience(expId, 'achievements', newAchievements);
+      updateExperience(id, 'achievements', newAchievements);
     }
   };
 
@@ -110,7 +110,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
               <Input
                 value={exp.company}
                 onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
-                placeholder="Tech Corp"
+                placeholder="Tech Corp Inc."
               />
             </div>
           </div>
@@ -121,7 +121,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
               <Input
                 value={exp.location}
                 onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
-                placeholder="San Francisco, CA"
+                placeholder="New York, NY"
               />
             </div>
             <div>
@@ -143,23 +143,36 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 mb-4">
-            <Checkbox
-              id={`current-${exp.id}`}
-              checked={exp.current}
-              onCheckedChange={(checked) => updateExperience(exp.id, 'current', checked)}
-            />
-            <Label htmlFor={`current-${exp.id}`}>Currently working here</Label>
+          <div className="mb-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id={`current-${exp.id}`}
+                checked={exp.current}
+                onCheckedChange={(checked) => updateExperience(exp.id, 'current', checked)}
+              />
+              <Label htmlFor={`current-${exp.id}`}>I currently work here</Label>
+            </div>
           </div>
 
           <div>
-            <Label>Key Achievements & Responsibilities</Label>
+            <div className="flex items-center justify-between mb-2">
+              <Label>Key Achievements & Responsibilities *</Label>
+              <Button
+                onClick={() => addAchievement(exp.id)}
+                size="sm"
+                variant="outline"
+                type="button"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Add Point
+              </Button>
+            </div>
             {exp.achievements.map((achievement, achIndex) => (
-              <div key={achIndex} className="flex items-center space-x-2 mt-2">
+              <div key={achIndex} className="flex gap-2 mb-2">
                 <Textarea
                   value={achievement}
                   onChange={(e) => updateAchievement(exp.id, achIndex, e.target.value)}
-                  placeholder="• Increased team productivity by 30% through implementation of agile methodologies..."
+                  placeholder="Developed and maintained web applications using React and Node.js..."
                   rows={2}
                   className="flex-1"
                 />
@@ -168,22 +181,14 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
                     onClick={() => removeAchievement(exp.id, achIndex)}
                     size="sm"
                     variant="ghost"
-                    className="text-red-500"
+                    className="text-red-500 hover:text-red-700"
+                    type="button"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>
             ))}
-            <Button
-              onClick={() => addAchievement(exp.id)}
-              size="sm"
-              variant="outline"
-              className="mt-2"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Achievement
-            </Button>
           </div>
         </Card>
       ))}

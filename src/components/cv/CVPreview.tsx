@@ -22,79 +22,113 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
           container: 'bg-white',
           header: 'bg-gradient-to-r from-blue-600 to-purple-600 text-white',
           section: 'border-l-4 border-blue-500 pl-4',
-          accent: 'text-blue-600'
+          accent: 'text-blue-600',
+          profileSection: 'flex items-start space-x-6'
         };
       case 'classic':
         return {
           container: 'bg-white',
           header: 'bg-gray-900 text-white',
           section: 'border-b-2 border-gray-200 pb-2',
-          accent: 'text-gray-700'
+          accent: 'text-gray-700',
+          profileSection: 'text-center'
         };
       case 'minimal':
         return {
           container: 'bg-white',
           header: 'bg-white text-gray-900 border-b-2 border-gray-900',
           section: 'mb-6',
-          accent: 'text-gray-900'
+          accent: 'text-gray-900',
+          profileSection: 'flex items-center justify-between'
         };
       case 'creative':
         return {
           container: 'bg-gradient-to-br from-purple-50 to-pink-50',
           header: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white',
-          section: 'border-l-4 border-purple-500 pl-4 bg-white rounded-r-lg p-3',
-          accent: 'text-purple-600'
+          section: 'border-l-4 border-purple-500 pl-4 bg-white rounded-r-lg p-3 mb-4',
+          accent: 'text-purple-600',
+          profileSection: 'flex items-start space-x-6'
         };
       default:
         return {
           container: 'bg-white',
           header: 'bg-blue-600 text-white',
           section: 'border-l-4 border-blue-500 pl-4',
-          accent: 'text-blue-600'
+          accent: 'text-blue-600',
+          profileSection: 'flex items-start space-x-6'
         };
     }
   };
 
   const styles = getTemplateStyles();
 
+  const renderProfilePicture = () => {
+    if (!data.personalInfo.profilePicture) return null;
+    
+    const sizeClass = template === 'classic' ? 'w-32 h-32 mx-auto' : 'w-24 h-24';
+    
+    return (
+      <div className={`${sizeClass} rounded-full overflow-hidden bg-gray-200 flex-shrink-0`}>
+        <img 
+          src={data.personalInfo.profilePicture} 
+          alt="Profile" 
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  };
+
   return (
-    <div className={`${styles.container} min-h-[800px] text-sm print:text-xs`}>
+    <div className={`${styles.container} min-h-[800px] text-sm print:text-xs shadow-lg`}>
       {/* Header */}
       <div className={`${styles.header} p-6 print:p-4`}>
-        <h1 className="text-3xl print:text-2xl font-bold mb-2">
-          {data.personalInfo.fullName || 'Your Name'}
-        </h1>
-        <div className="flex flex-wrap gap-4 text-sm print:text-xs opacity-90">
-          {data.personalInfo.email && (
-            <div className="flex items-center">
-              <Mail className="h-4 w-4 mr-1" />
-              {data.personalInfo.email}
+        <div className={styles.profileSection}>
+          {(template === 'modern' || template === 'creative') && renderProfilePicture()}
+          
+          <div className={template === 'classic' ? 'space-y-3' : 'flex-1'}>
+            {template === 'classic' && renderProfilePicture()}
+            
+            <h1 className={`${template === 'classic' ? 'text-center mt-4' : ''} text-3xl print:text-2xl font-bold mb-2`}>
+              {data.personalInfo.fullName || 'Your Name'}
+            </h1>
+            
+            <div className={`flex flex-wrap gap-4 text-sm print:text-xs opacity-90 ${
+              template === 'classic' ? 'justify-center' : ''
+            }`}>
+              {data.personalInfo.email && (
+                <div className="flex items-center">
+                  <Mail className="h-4 w-4 mr-1" />
+                  {data.personalInfo.email}
+                </div>
+              )}
+              {data.personalInfo.phone && (
+                <div className="flex items-center">
+                  <Phone className="h-4 w-4 mr-1" />
+                  {data.personalInfo.phone}
+                </div>
+              )}
+              {data.personalInfo.location && (
+                <div className="flex items-center">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  {data.personalInfo.location}
+                </div>
+              )}
+              {data.personalInfo.linkedin && (
+                <div className="flex items-center">
+                  <Linkedin className="h-4 w-4 mr-1" />
+                  {data.personalInfo.linkedin}
+                </div>
+              )}
+              {data.personalInfo.website && (
+                <div className="flex items-center">
+                  <Globe className="h-4 w-4 mr-1" />
+                  {data.personalInfo.website}
+                </div>
+              )}
             </div>
-          )}
-          {data.personalInfo.phone && (
-            <div className="flex items-center">
-              <Phone className="h-4 w-4 mr-1" />
-              {data.personalInfo.phone}
-            </div>
-          )}
-          {data.personalInfo.location && (
-            <div className="flex items-center">
-              <MapPin className="h-4 w-4 mr-1" />
-              {data.personalInfo.location}
-            </div>
-          )}
-          {data.personalInfo.linkedin && (
-            <div className="flex items-center">
-              <Linkedin className="h-4 w-4 mr-1" />
-              {data.personalInfo.linkedin}
-            </div>
-          )}
-          {data.personalInfo.website && (
-            <div className="flex items-center">
-              <Globe className="h-4 w-4 mr-1" />
-              {data.personalInfo.website}
-            </div>
-          )}
+          </div>
+          
+          {template === 'minimal' && renderProfilePicture()}
         </div>
       </div>
 

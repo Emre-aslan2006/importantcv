@@ -9,7 +9,7 @@ import EducationForm from '@/components/cv/EducationForm';
 import SkillsForm from '@/components/cv/SkillsForm';
 import CVPreview from '@/components/cv/CVPreview';
 import { CVData, defaultCVData } from '@/types/cv';
-import { Download, Eye, FileText, Palette, Zap } from 'lucide-react';
+import { Download, Eye, FileText, Palette, Zap, Printer, Share2 } from 'lucide-react';
 
 const Index = () => {
   const [cvData, setCvData] = useState<CVData>(defaultCVData);
@@ -24,7 +24,54 @@ const Index = () => {
   };
 
   const handlePrint = () => {
+    const printContent = document.getElementById('cv-preview');
+    if (printContent) {
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>CV - ${cvData.personalInfo.fullName}</title>
+              <style>
+                body { margin: 0; font-family: Arial, sans-serif; }
+                @media print {
+                  body { margin: 0; }
+                  .no-print { display: none; }
+                }
+              </style>
+            </head>
+            <body>
+              ${printContent.innerHTML}
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+      }
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    // Trigger browser's print dialog which can save as PDF
     window.print();
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `CV - ${cvData.personalInfo.fullName}`,
+          text: 'Check out my professional CV',
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.log('Error sharing:', err);
+      }
+    } else {
+      // Fallback: copy URL to clipboard
+      navigator.clipboard.writeText(window.location.href);
+      alert('CV link copied to clipboard!');
+    }
   };
 
   return (
@@ -45,7 +92,15 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center space-x-3">
+              <Button variant="outline" onClick={handleShare} className="hidden md:flex">
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
               <Button variant="outline" onClick={handlePrint} className="hidden md:flex">
+                <Printer className="h-4 w-4 mr-2" />
+                Print
+              </Button>
+              <Button onClick={handleDownloadPDF} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                 <Download className="h-4 w-4 mr-2" />
                 Export PDF
               </Button>
@@ -160,7 +215,9 @@ const Index = () => {
                 </div>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                <CVPreview data={cvData} template={templateStyle} />
+                <div id="cv-preview">
+                  <CVPreview data={cvData} template={templateStyle} />
+                </div>
               </div>
             </Card>
           </div>

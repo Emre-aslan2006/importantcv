@@ -1,13 +1,12 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skills } from '@/types/cv';
-import { Plus, X, Code, Users, Globe, Award } from 'lucide-react';
+import { Plus, Trash2, Code, Brain, Globe, Award } from 'lucide-react';
 
 interface SkillsFormProps {
   data: Skills;
@@ -15,227 +14,215 @@ interface SkillsFormProps {
 }
 
 const SkillsForm: React.FC<SkillsFormProps> = ({ data, onChange }) => {
-  const [newTechnicalSkill, setNewTechnicalSkill] = useState('');
-  const [newSoftSkill, setNewSoftSkill] = useState('');
-  const [newLanguage, setNewLanguage] = useState('');
-  const [newLanguageLevel, setNewLanguageLevel] = useState('');
-  const [newCertification, setNewCertification] = useState('');
-
-  const addTechnicalSkill = () => {
-    if (newTechnicalSkill.trim()) {
-      onChange({
-        ...data,
-        technical: [...data.technical, newTechnicalSkill.trim()]
-      });
-      setNewTechnicalSkill('');
-    }
-  };
-
-  const removeTechnicalSkill = (index: number) => {
+  const addSkill = (category: 'technical' | 'soft' | 'certifications') => {
     onChange({
       ...data,
-      technical: data.technical.filter((_, i) => i !== index)
+      [category]: [...data[category], '']
     });
   };
 
-  const addSoftSkill = () => {
-    if (newSoftSkill.trim()) {
-      onChange({
-        ...data,
-        soft: [...data.soft, newSoftSkill.trim()]
-      });
-      setNewSoftSkill('');
-    }
-  };
-
-  const removeSoftSkill = (index: number) => {
+  const updateSkill = (category: 'technical' | 'soft' | 'certifications', index: number, value: string) => {
+    const newSkills = [...data[category]];
+    newSkills[index] = value;
     onChange({
       ...data,
-      soft: data.soft.filter((_, i) => i !== index)
+      [category]: newSkills
+    });
+  };
+
+  const removeSkill = (category: 'technical' | 'soft' | 'certifications', index: number) => {
+    const newSkills = data[category].filter((_, i) => i !== index);
+    onChange({
+      ...data,
+      [category]: newSkills
     });
   };
 
   const addLanguage = () => {
-    if (newLanguage.trim() && newLanguageLevel) {
-      onChange({
-        ...data,
-        languages: [...data.languages, { language: newLanguage.trim(), level: newLanguageLevel }]
-      });
-      setNewLanguage('');
-      setNewLanguageLevel('');
-    }
+    onChange({
+      ...data,
+      languages: [...data.languages, { language: '', level: '' }]
+    });
+  };
+
+  const updateLanguage = (index: number, field: 'language' | 'level', value: string) => {
+    const newLanguages = [...data.languages];
+    newLanguages[index] = { ...newLanguages[index], [field]: value };
+    onChange({
+      ...data,
+      languages: newLanguages
+    });
   };
 
   const removeLanguage = (index: number) => {
+    const newLanguages = data.languages.filter((_, i) => i !== index);
     onChange({
       ...data,
-      languages: data.languages.filter((_, i) => i !== index)
+      languages: newLanguages
     });
   };
 
-  const addCertification = () => {
-    if (newCertification.trim()) {
-      onChange({
-        ...data,
-        certifications: [...data.certifications, newCertification.trim()]
-      });
-      setNewCertification('');
-    }
-  };
-
-  const removeCertification = (index: number) => {
-    onChange({
-      ...data,
-      certifications: data.certifications.filter((_, i) => i !== index)
-    });
-  };
+  const languageLevels = ['Native', 'Fluent', 'Advanced', 'Intermediate', 'Basic'];
 
   return (
     <div className="space-y-6">
       {/* Technical Skills */}
       <Card className="p-4">
-        <h3 className="text-lg font-medium flex items-center mb-4">
-          <Code className="h-5 w-5 mr-2" />
-          Technical Skills
-        </h3>
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium flex items-center">
+            <Code className="h-5 w-5 mr-2" />
+            Technical Skills
+          </h3>
+          <Button onClick={() => addSkill('technical')} size="sm" variant="outline">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Skill
+          </Button>
+        </div>
+        <div className="space-y-2">
           {data.technical.map((skill, index) => (
-            <Badge key={index} variant="secondary" className="flex items-center">
-              {skill}
+            <div key={index} className="flex gap-2">
+              <Input
+                value={skill}
+                onChange={(e) => updateSkill('technical', index, e.target.value)}
+                placeholder="React, Python, SQL, etc."
+                className="flex-1"
+              />
               <Button
-                onClick={() => removeTechnicalSkill(index)}
+                onClick={() => removeSkill('technical', index)}
                 size="sm"
                 variant="ghost"
-                className="h-auto p-0 ml-2 hover:bg-transparent"
+                className="text-red-500 hover:text-red-700"
               >
-                <X className="h-3 w-3" />
+                <Trash2 className="h-4 w-4" />
               </Button>
-            </Badge>
+            </div>
           ))}
-        </div>
-        <div className="flex space-x-2">
-          <Input
-            value={newTechnicalSkill}
-            onChange={(e) => setNewTechnicalSkill(e.target.value)}
-            placeholder="e.g., React, Python, AWS"
-            onKeyPress={(e) => e.key === 'Enter' && addTechnicalSkill()}
-          />
-          <Button onClick={addTechnicalSkill} type="button">
-            <Plus className="h-4 w-4" />
-          </Button>
+          {data.technical.length === 0 && (
+            <p className="text-gray-500 text-sm">No technical skills added yet.</p>
+          )}
         </div>
       </Card>
 
       {/* Soft Skills */}
       <Card className="p-4">
-        <h3 className="text-lg font-medium flex items-center mb-4">
-          <Users className="h-5 w-5 mr-2" />
-          Soft Skills
-        </h3>
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium flex items-center">
+            <Brain className="h-5 w-5 mr-2" />
+            Soft Skills
+          </h3>
+          <Button onClick={() => addSkill('soft')} size="sm" variant="outline">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Skill
+          </Button>
+        </div>
+        <div className="space-y-2">
           {data.soft.map((skill, index) => (
-            <Badge key={index} variant="outline" className="flex items-center">
-              {skill}
+            <div key={index} className="flex gap-2">
+              <Input
+                value={skill}
+                onChange={(e) => updateSkill('soft', index, e.target.value)}
+                placeholder="Leadership, Communication, Problem Solving, etc."
+                className="flex-1"
+              />
               <Button
-                onClick={() => removeSoftSkill(index)}
+                onClick={() => removeSkill('soft', index)}
                 size="sm"
                 variant="ghost"
-                className="h-auto p-0 ml-2 hover:bg-transparent"
+                className="text-red-500 hover:text-red-700"
               >
-                <X className="h-3 w-3" />
+                <Trash2 className="h-4 w-4" />
               </Button>
-            </Badge>
+            </div>
           ))}
-        </div>
-        <div className="flex space-x-2">
-          <Input
-            value={newSoftSkill}
-            onChange={(e) => setNewSoftSkill(e.target.value)}
-            placeholder="e.g., Leadership, Communication, Problem Solving"
-            onKeyPress={(e) => e.key === 'Enter' && addSoftSkill()}
-          />
-          <Button onClick={addSoftSkill} type="button">
-            <Plus className="h-4 w-4" />
-          </Button>
+          {data.soft.length === 0 && (
+            <p className="text-gray-500 text-sm">No soft skills added yet.</p>
+          )}
         </div>
       </Card>
 
       {/* Languages */}
       <Card className="p-4">
-        <h3 className="text-lg font-medium flex items-center mb-4">
-          <Globe className="h-5 w-5 mr-2" />
-          Languages
-        </h3>
-        <div className="space-y-2 mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium flex items-center">
+            <Globe className="h-5 w-5 mr-2" />
+            Languages
+          </h3>
+          <Button onClick={addLanguage} size="sm" variant="outline">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Language
+          </Button>
+        </div>
+        <div className="space-y-2">
           {data.languages.map((lang, index) => (
-            <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-              <span>{lang.language} - {lang.level}</span>
+            <div key={index} className="flex gap-2">
+              <Input
+                value={lang.language}
+                onChange={(e) => updateLanguage(index, 'language', e.target.value)}
+                placeholder="English, Spanish, etc."
+                className="flex-1"
+              />
+              <Select value={lang.level} onValueChange={(value) => updateLanguage(index, 'level', value)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {languageLevels.map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {level}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button
                 onClick={() => removeLanguage(index)}
                 size="sm"
                 variant="ghost"
-                className="text-red-500"
+                className="text-red-500 hover:text-red-700"
               >
-                <X className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           ))}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-          <Input
-            value={newLanguage}
-            onChange={(e) => setNewLanguage(e.target.value)}
-            placeholder="Language"
-          />
-          <Select value={newLanguageLevel} onValueChange={setNewLanguageLevel}>
-            <SelectTrigger>
-              <SelectValue placeholder="Level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Native">Native</SelectItem>
-              <SelectItem value="Fluent">Fluent</SelectItem>
-              <SelectItem value="Advanced">Advanced</SelectItem>
-              <SelectItem value="Intermediate">Intermediate</SelectItem>
-              <SelectItem value="Basic">Basic</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={addLanguage} type="button">
-            <Plus className="h-4 w-4" />
-          </Button>
+          {data.languages.length === 0 && (
+            <p className="text-gray-500 text-sm">No languages added yet.</p>
+          )}
         </div>
       </Card>
 
       {/* Certifications */}
       <Card className="p-4">
-        <h3 className="text-lg font-medium flex items-center mb-4">
-          <Award className="h-5 w-5 mr-2" />
-          Certifications
-        </h3>
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium flex items-center">
+            <Award className="h-5 w-5 mr-2" />
+            Certifications
+          </h3>
+          <Button onClick={() => addSkill('certifications')} size="sm" variant="outline">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Certification
+          </Button>
+        </div>
+        <div className="space-y-2">
           {data.certifications.map((cert, index) => (
-            <Badge key={index} variant="default" className="flex items-center">
-              {cert}
+            <div key={index} className="flex gap-2">
+              <Input
+                value={cert}
+                onChange={(e) => updateSkill('certifications', index, e.target.value)}
+                placeholder="AWS Certified Developer, PMP, etc."
+                className="flex-1"
+              />
               <Button
-                onClick={() => removeCertification(index)}
+                onClick={() => removeSkill('certifications', index)}
                 size="sm"
                 variant="ghost"
-                className="h-auto p-0 ml-2 hover:bg-transparent"
+                className="text-red-500 hover:text-red-700"
               >
-                <X className="h-3 w-3" />
+                <Trash2 className="h-4 w-4" />
               </Button>
-            </Badge>
+            </div>
           ))}
-        </div>
-        <div className="flex space-x-2">
-          <Input
-            value={newCertification}
-            onChange={(e) => setNewCertification(e.target.value)}
-            placeholder="e.g., AWS Certified Solutions Architect"
-            onKeyPress={(e) => e.key === 'Enter' && addCertification()}
-          />
-          <Button onClick={addCertification} type="button">
-            <Plus className="h-4 w-4" />
-          </Button>
+          {data.certifications.length === 0 && (
+            <p className="text-gray-500 text-sm">No certifications added yet.</p>
+          )}
         </div>
       </Card>
     </div>

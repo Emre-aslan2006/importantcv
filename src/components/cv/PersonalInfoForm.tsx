@@ -1,9 +1,12 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { PersonalInfo } from '@/types/cv';
+import { Upload, User } from 'lucide-react';
 
 interface PersonalInfoFormProps {
   data: PersonalInfo;
@@ -11,12 +14,71 @@ interface PersonalInfoFormProps {
 }
 
 const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChange }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleChange = (field: keyof PersonalInfo, value: string) => {
     onChange({ ...data, [field]: value });
   };
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        handleChange('profilePicture', result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const removeProfilePicture = () => {
+    handleChange('profilePicture', '');
+  };
+
   return (
     <div className="space-y-4">
+      {/* Profile Picture Section */}
+      <div className="flex flex-col items-center space-y-3 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+        <Avatar className="h-24 w-24">
+          {data.profilePicture ? (
+            <AvatarImage src={data.profilePicture} alt="Profile" />
+          ) : (
+            <AvatarFallback>
+              <User className="h-12 w-12 text-gray-400" />
+            </AvatarFallback>
+          )}
+        </Avatar>
+        
+        <div className="flex gap-2">
+          <Button onClick={triggerFileUpload} size="sm" variant="outline">
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Photo
+          </Button>
+          {data.profilePicture && (
+            <Button onClick={removeProfilePicture} size="sm" variant="ghost" className="text-red-500">
+              Remove
+            </Button>
+          )}
+        </div>
+        
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="hidden"
+        />
+        
+        <p className="text-xs text-gray-500 text-center">
+          Upload a professional headshot (JPG, PNG, max 5MB)
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="fullName">Full Name *</Label>
