@@ -11,7 +11,7 @@ import SkillsForm from '@/components/cv/SkillsForm';
 import CVPreview from '@/components/cv/CVPreview';
 import CoverLetterGenerator from '@/components/cv/CoverLetterGenerator';
 import { CVData, defaultCVData } from '@/types/cv';
-import { Download, Eye, FileText, Palette, Zap, Printer, Moon, Sun } from 'lucide-react';
+import { Download, Eye, FileText, Palette, Zap, Printer, Moon, Sun, Sparkles, Brain, Target } from 'lucide-react';
 
 const Index = () => {
   const [cvData, setCvData] = useState<CVData>(defaultCVData);
@@ -96,24 +96,31 @@ const Index = () => {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'}`}>
-      {/* Header */}
-      <div className={`backdrop-blur-sm border-b sticky top-0 z-10 transition-colors duration-300 ${isDarkMode ? 'bg-gray-800/80 border-gray-700' : 'bg-white/80 border-gray-200'}`}>
+    <div className={`min-h-screen transition-all duration-500 ${isDarkMode ? 'dark bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'}`}>
+      {/* Enhanced Header */}
+      <div className={`backdrop-blur-md border-b sticky top-0 z-10 transition-all duration-300 ${isDarkMode ? 'bg-gray-900/90 border-gray-700/50 shadow-xl' : 'bg-white/90 border-gray-200/50 shadow-lg'}`}>
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
-                <FileText className="h-6 w-6 text-white" />
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-3 rounded-xl shadow-lg">
+                  <Brain className="h-7 w-7 text-white" />
+                </div>
+                <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1">
+                  <Sparkles className="h-3 w-3 text-gray-900" />
+                </div>
               </div>
               <div>
-                <h1 className={`text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent`}>
-                  Professional CV Builder
+                <h1 className={`text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent`}>
+                  Jobwise AI
                 </h1>
-                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Create ATS-optimized resumes in minutes</p>
+                <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  Smart CV Builder • ATS Optimized • AI-Powered
+                </p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm">
                 <Sun className="h-4 w-4" />
                 <Switch checked={isDarkMode} onCheckedChange={toggleDarkMode} />
                 <Moon className="h-4 w-4" />
@@ -121,23 +128,21 @@ const Index = () => {
               <Button 
                 variant="outline" 
                 onClick={() => setShowCoverLetter(!showCoverLetter)}
-                className="hidden md:flex"
+                className="hidden md:flex bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 hover:from-purple-700 hover:to-pink-700"
               >
-                💬 Cover Letter
+                💬 Cover Letter AI
               </Button>
-              <Button variant="outline" onClick={handlePrint} className="hidden md:flex">
+              <Button variant="outline" onClick={handlePrint} className="hidden md:flex backdrop-blur-sm">
                 <Printer className="h-4 w-4 mr-2" />
                 Print
               </Button>
-              <Button onClick={handleDownloadPDF} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Button onClick={handleDownloadPDF} className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg">
                 <Download className="h-4 w-4 mr-2" />
                 Export PDF
               </Button>
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <div className="flex items-center">
-                  <Zap className="h-4 w-4 text-green-500 mr-1" />
-                  ATS Optimized
-                </div>
+              <div className="flex items-center space-x-2 text-sm px-3 py-2 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                <Zap className="h-4 w-4" />
+                <span className="font-medium">ATS Ready</span>
               </div>
             </div>
           </div>
@@ -149,34 +154,34 @@ const Index = () => {
           <CoverLetterGenerator cvData={cvData} isDarkMode={isDarkMode} onClose={() => setShowCoverLetter(false)} />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Form Section */}
+            {/* Enhanced Form Section */}
             <div className="space-y-6">
-              <Card className={`p-6 shadow-lg border-0 backdrop-blur-sm transition-colors duration-300 ${isDarkMode ? 'bg-gray-800/90 text-white' : 'bg-white/90'}`}>
+              <Card className={`p-6 shadow-2xl border-0 backdrop-blur-md transition-all duration-300 ${isDarkMode ? 'bg-gray-800/80 text-white shadow-purple-500/20' : 'bg-white/80 shadow-blue-200/30'}`}>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-semibold flex items-center">
-                    <Palette className="h-5 w-5 mr-2 text-blue-600" />
-                    Build Your CV
+                    <Target className="h-5 w-5 mr-2 text-blue-600" />
+                    Build Your Professional CV
                   </h2>
                   <select
                     value={templateStyle}
                     onChange={(e) => setTemplateStyle(e.target.value)}
-                    className={`px-3 py-1 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
+                    className={`px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ${isDarkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'border-gray-300 bg-white/80'}`}
                   >
-                    <option value="modern">Modern</option>
-                    <option value="classic">Classic</option>
-                    <option value="minimal">Minimal</option>
-                    <option value="creative">Creative</option>
-                    <option value="dark">Dark Theme</option>
-                    <option value="gradient">Gradient</option>
+                    <option value="modern">🎨 Modern</option>
+                    <option value="classic">📋 Classic</option>
+                    <option value="minimal">⚡ Minimal</option>
+                    <option value="creative">🌟 Creative</option>
+                    <option value="dark">🌙 Dark</option>
+                    <option value="gradient">🌈 Gradient</option>
                   </select>
                 </div>
 
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-4 mb-6">
-                    <TabsTrigger value="personal" className="text-xs">Personal</TabsTrigger>
-                    <TabsTrigger value="experience" className="text-xs">Experience</TabsTrigger>
-                    <TabsTrigger value="education" className="text-xs">Education</TabsTrigger>
-                    <TabsTrigger value="skills" className="text-xs">Skills</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-4 mb-6 bg-gray-100/50 dark:bg-gray-700/50">
+                    <TabsTrigger value="personal" className="text-xs font-medium">👤 Personal</TabsTrigger>
+                    <TabsTrigger value="experience" className="text-xs font-medium">💼 Experience</TabsTrigger>
+                    <TabsTrigger value="education" className="text-xs font-medium">🎓 Education</TabsTrigger>
+                    <TabsTrigger value="skills" className="text-xs font-medium">⚡ Skills</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="personal">
@@ -209,7 +214,7 @@ const Index = () => {
                 </Tabs>
               </Card>
 
-              {/* Navigation */}
+              {/* Enhanced Navigation */}
               <div className="flex justify-between">
                 <Button 
                   variant="outline" 
@@ -219,8 +224,9 @@ const Index = () => {
                     if (currentIndex > 0) setActiveTab(tabs[currentIndex - 1]);
                   }}
                   disabled={activeTab === 'personal'}
+                  className="backdrop-blur-sm"
                 >
-                  Previous
+                  ← Previous
                 </Button>
                 <Button 
                   onClick={() => {
@@ -229,26 +235,26 @@ const Index = () => {
                     if (currentIndex < tabs.length - 1) setActiveTab(tabs[currentIndex + 1]);
                   }}
                   disabled={activeTab === 'skills'}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700"
                 >
-                  Next
+                  Next →
                 </Button>
               </div>
             </div>
 
-            {/* Preview Section */}
+            {/* Enhanced Preview Section */}
             <div className="space-y-6">
-              <Card className={`p-6 shadow-lg border-0 backdrop-blur-sm transition-colors duration-300 ${isDarkMode ? 'bg-gray-800/90 text-white' : 'bg-white/90'}`}>
+              <Card className={`p-6 shadow-2xl border-0 backdrop-blur-md transition-all duration-300 ${isDarkMode ? 'bg-gray-800/80 text-white shadow-purple-500/20' : 'bg-white/80 shadow-blue-200/30'}`}>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold flex items-center">
                     <Eye className="h-5 w-5 mr-2 text-green-600" />
                     Live Preview
                   </h2>
-                  <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <div className={`text-sm px-3 py-1 rounded-full ${isDarkMode ? 'text-gray-300 bg-gray-700/50' : 'text-gray-600 bg-gray-100/50'}`}>
                     {templateStyle.charAt(0).toUpperCase() + templateStyle.slice(1)} Template
                   </div>
                 </div>
-                <div className={`border rounded-lg overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
+                <div className={`border rounded-xl overflow-hidden transition-all duration-300 shadow-inner ${isDarkMode ? 'bg-gray-900/50 border-gray-700' : 'bg-white border-gray-200'}`}>
                   <div id="cv-preview">
                     <CVPreview data={cvData} template={templateStyle} />
                   </div>

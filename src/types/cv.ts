@@ -34,7 +34,7 @@ export interface Skills {
   technical: string[];
   soft: string[];
   languages: Array<{ language: string; level: string }>;
-  certifications: string[];
+  certifications: Array<{ name: string; link?: string }>;
 }
 
 export interface Projects {

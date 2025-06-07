@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { CVData } from '@/types/cv';
-import { Mail, Phone, MapPin, Linkedin, Globe, Calendar } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, Globe, Calendar, ExternalLink } from 'lucide-react';
 
 interface CVPreviewProps {
   data: CVData;
@@ -10,8 +10,23 @@ interface CVPreviewProps {
 
 const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
   const formatDate = (dateString: string) => {
-    if (!dateString) return '';
-    const date = new Date(dateString + '-01');
+    if (!dateString || dateString === 'Invalid Date') return '';
+    
+    // Handle YYYY-MM format
+    if (dateString.includes('-')) {
+      const [year, month] = dateString.split('-');
+      if (year && month) {
+        const date = new Date(parseInt(year), parseInt(month) - 1);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+      }
+    }
+    
+    // Handle other formats
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return dateString; // Return original if can't parse
+    }
+    
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
   };
 
@@ -86,7 +101,7 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
     const sizeClass = template === 'classic' ? 'w-32 h-32 mx-auto' : 'w-24 h-24';
     
     return (
-      <div className={`${sizeClass} rounded-full overflow-hidden bg-gray-200 flex-shrink-0`}>
+      <div className={`${sizeClass} rounded-full overflow-hidden bg-gray-200 flex-shrink-0 ring-4 ring-white/20`}>
         <img 
           src={data.personalInfo.profilePicture} 
           alt="Profile" 
@@ -97,7 +112,7 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
   };
 
   return (
-    <div className={`${styles.container} min-h-[800px] text-sm print:text-xs shadow-lg`}>
+    <div className={`${styles.container} min-h-[800px] text-sm print:text-xs shadow-2xl transition-all duration-300`}>
       {/* Header */}
       <div className={`${styles.header} p-6 print:p-4`}>
         <div className={styles.profileSection}>
@@ -274,11 +289,23 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
                 <h2 className={`text-lg print:text-base font-bold ${styles.accent} mb-3`}>
                   CERTIFICATIONS
                 </h2>
-                <ul className="space-y-1">
+                <ul className="space-y-2">
                   {data.skills.certifications.map((cert, index) => (
                     <li key={index} className="flex items-start">
                       <span className={`${template === 'dark' || template === 'gradient' ? 'text-gray-500' : 'text-gray-400'} mr-2`}>•</span>
-                      <span className={textColor}>{cert}</span>
+                      <div className="flex-1">
+                        <span className={textColor}>{cert.name}</span>
+                        {cert.link && (
+                          <a 
+                            href={cert.link} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className={`ml-2 inline-flex items-center ${styles.accent} hover:underline text-xs`}
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
