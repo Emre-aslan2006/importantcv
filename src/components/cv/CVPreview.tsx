@@ -49,6 +49,22 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
           accent: 'text-purple-600',
           profileSection: 'flex items-start space-x-6'
         };
+      case 'dark':
+        return {
+          container: 'bg-gray-900 text-white',
+          header: 'bg-gradient-to-r from-gray-800 to-gray-700 text-white border-b border-gray-600',
+          section: 'border-l-4 border-gray-600 pl-4 mb-6',
+          accent: 'text-gray-300',
+          profileSection: 'flex items-start space-x-6'
+        };
+      case 'gradient':
+        return {
+          container: 'bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white',
+          header: 'bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900',
+          section: 'border-l-4 border-yellow-400 pl-4 mb-6 bg-white/10 rounded-r-lg p-3',
+          accent: 'text-yellow-300',
+          profileSection: 'flex items-start space-x-6'
+        };
       default:
         return {
           container: 'bg-white',
@@ -61,6 +77,8 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
   };
 
   const styles = getTemplateStyles();
+  const textColor = template === 'dark' || template === 'gradient' ? 'text-gray-300' : 'text-gray-700';
+  const headingColor = template === 'dark' || template === 'gradient' ? 'text-white' : 'text-gray-900';
 
   const renderProfilePicture = () => {
     if (!data.personalInfo.profilePicture) return null;
@@ -83,7 +101,7 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
       {/* Header */}
       <div className={`${styles.header} p-6 print:p-4`}>
         <div className={styles.profileSection}>
-          {(template === 'modern' || template === 'creative') && renderProfilePicture()}
+          {(template === 'modern' || template === 'creative' || template === 'dark' || template === 'gradient') && renderProfilePicture()}
           
           <div className={template === 'classic' ? 'space-y-3' : 'flex-1'}>
             {template === 'classic' && renderProfilePicture()}
@@ -139,7 +157,7 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
             <h2 className={`text-lg print:text-base font-bold ${styles.accent} mb-3`}>
               PROFESSIONAL SUMMARY
             </h2>
-            <p className="text-gray-700 leading-relaxed">
+            <p className={`${textColor} leading-relaxed`}>
               {data.personalInfo.summary}
             </p>
           </div>
@@ -156,20 +174,20 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
                 <div key={exp.id}>
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h3 className="font-bold text-gray-900">{exp.jobTitle}</h3>
+                      <h3 className={`font-bold ${headingColor}`}>{exp.jobTitle}</h3>
                       <p className={`${styles.accent} font-medium`}>
                         {exp.company} {exp.location && `• ${exp.location}`}
                       </p>
                     </div>
-                    <div className="text-gray-600 text-xs flex items-center">
+                    <div className={`${textColor} text-xs flex items-center`}>
                       <Calendar className="h-3 w-3 mr-1" />
                       {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
                     </div>
                   </div>
-                  <ul className="space-y-1 text-gray-700">
+                  <ul className={`space-y-1 ${textColor}`}>
                     {exp.achievements.filter(ach => ach.trim()).map((achievement, index) => (
                       <li key={index} className="flex items-start">
-                        <span className="text-gray-400 mr-2">•</span>
+                        <span className={`${template === 'dark' || template === 'gradient' ? 'text-gray-500' : 'text-gray-400'} mr-2`}>•</span>
                         <span className="flex-1">{achievement}</span>
                       </li>
                     ))}
@@ -191,17 +209,17 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
                 <div key={edu.id}>
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-bold text-gray-900">{edu.degree}</h3>
+                      <h3 className={`font-bold ${headingColor}`}>{edu.degree}</h3>
                       <p className={`${styles.accent} font-medium`}>{edu.institution}</p>
                       {(edu.gpa || edu.honors) && (
-                        <p className="text-gray-600 text-xs">
+                        <p className={`${textColor} text-xs`}>
                           {edu.gpa && `GPA: ${edu.gpa}`}
                           {edu.gpa && edu.honors && ' • '}
                           {edu.honors}
                         </p>
                       )}
                     </div>
-                    <div className="text-gray-600 text-xs">{edu.graduationYear}</div>
+                    <div className={`${textColor} text-xs`}>{edu.graduationYear}</div>
                   </div>
                 </div>
               ))}
@@ -218,14 +236,14 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
             <div className="space-y-3">
               {data.skills.technical.length > 0 && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">Technical Skills:</h4>
-                  <p className="text-gray-700">{data.skills.technical.join(' • ')}</p>
+                  <h4 className={`font-semibold ${headingColor} mb-1`}>Technical Skills:</h4>
+                  <p className={textColor}>{data.skills.technical.join(' • ')}</p>
                 </div>
               )}
               {data.skills.soft.length > 0 && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">Core Competencies:</h4>
-                  <p className="text-gray-700">{data.skills.soft.join(' • ')}</p>
+                  <h4 className={`font-semibold ${headingColor} mb-1`}>Core Competencies:</h4>
+                  <p className={textColor}>{data.skills.soft.join(' • ')}</p>
                 </div>
               )}
             </div>
@@ -243,8 +261,8 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
                 <div className="space-y-1">
                   {data.skills.languages.map((lang, index) => (
                     <div key={index} className="flex justify-between">
-                      <span className="text-gray-900">{lang.language}</span>
-                      <span className="text-gray-600">{lang.level}</span>
+                      <span className={headingColor}>{lang.language}</span>
+                      <span className={textColor}>{lang.level}</span>
                     </div>
                   ))}
                 </div>
@@ -259,8 +277,8 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
                 <ul className="space-y-1">
                   {data.skills.certifications.map((cert, index) => (
                     <li key={index} className="flex items-start">
-                      <span className="text-gray-400 mr-2">•</span>
-                      <span className="text-gray-700">{cert}</span>
+                      <span className={`${template === 'dark' || template === 'gradient' ? 'text-gray-500' : 'text-gray-400'} mr-2`}>•</span>
+                      <span className={textColor}>{cert}</span>
                     </li>
                   ))}
                 </ul>
