@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Experience } from '@/types/cv';
-import { Plus, Trash2, Briefcase } from 'lucide-react';
+import { Plus, Trash2, Briefcase, AlertTriangle, Calendar } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface ExperienceFormProps {
   data: Experience[];
@@ -15,6 +16,8 @@ interface ExperienceFormProps {
 }
 
 const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
+  const { toast } = useToast();
+
   const addExperience = () => {
     const newExp: Experience = {
       id: Date.now().toString(),
@@ -35,6 +38,80 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
 
   const removeExperience = (id: string) => {
     onChange(data.filter(exp => exp.id !== id));
+  };
+
+  const validateDate = (dateString: string): { isValid: boolean; message?: string } => {
+    if (!dateString) return { isValid: true };
+    
+    const date = new Date(dateString);
+    const currentDate = new Date();
+    const minDate = new Date('1950-01-01');
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() + 2);
+    
+    if (isNaN(date.getTime())) {
+      return { isValid: false, message: 'Invalid date format' };
+    }
+    
+    if (date < minDate) {
+      return { isValid: false, message: 'Date seems too early (before 1950)' };
+    }
+    
+    if (date > maxDate) {
+      return { isValid: false, message: 'Date seems too far in the future' };
+    }
+    
+    return { isValid: true };
+  };
+
+  const validateDateRange = (exp: Experience): { isValid: boolean; message?: string } => {
+    if (!exp.startDate || (!exp.endDate && !exp.current)) return { isValid: true };
+    
+    const startDate = new Date(exp.startDate);
+    const endDate = exp.current ? new Date() : new Date(exp.endDate);
+    
+    if (isNaN(startDate.getTime()) || (!exp.current && isNaN(endDate.getTime()))) {
+      return { isValid: false, message: 'Please enter valid dates' };
+    }
+    
+    if (startDate >= endDate) {
+      return { isValid: false, message: 'End date must be after start date' };
+    }
+    
+    const yearsDiff = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+    if (yearsDiff > 50) {
+      return { isValid: false, message: 'Work duration seems too long (>50 years)' };
+    }
+    
+    return { isValid: true };
+  };
+
+  const handleDateChange = (id: string, field: 'startDate' | 'endDate', value: string) => {
+    updateExperience(id, field, value);
+    
+    // Validate the date
+    const dateValidation = validateDate(value);
+    if (!dateValidation.isValid && value) {
+      toast({
+        title: "Invalid Date",
+        description: dateValidation.message,
+        variant: "destructive",
+      });
+    }
+    
+    // Validate date range
+    const exp = data.find(e => e.id === id);
+    if (exp) {
+      const updatedExp = { ...exp, [field]: value };
+      const rangeValidation = validateDateRange(updatedExp);
+      if (!rangeValidation.isValid && updatedExp.startDate && (updatedExp.endDate || updatedExp.current)) {
+        toast({
+          title: "Date Range Issue",
+          description: rangeValidation.message,
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const addAchievement = (id: string) => {
@@ -66,132 +143,176 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium flex items-center">
           <Briefcase className="h-5 w-5 mr-2" />
-          Work Experience
+          Professional Experience
         </h3>
-        <Button onClick={addExperience} size="sm" variant="outline">
+        <Button onClick={addExperience} size="sm" variant="outline" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 hover:from-blue-700 hover:to-purple-700">
           <Plus className="h-4 w-4 mr-2" />
           Add Experience
         </Button>
       </div>
 
       {data.length === 0 && (
-        <Card className="p-6 text-center text-gray-500">
-          <Briefcase className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-          <p>No work experience added yet.</p>
-          <p className="text-sm">Click "Add Experience" to get started.</p>
+        <Card className="p-8 text-center text-gray-500 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800">
+          <Briefcase className="h-16 w-16 mx-auto mb-4 text-purple-300" />
+          <h4 className="text-lg font-medium mb-2">No Work Experience Added Yet</h4>
+          <p className="text-sm">Add your professional experience to showcase your expertise.</p>
+          <p className="text-xs mt-2 text-purple-600">Include internships, full-time roles, freelance work, and projects</p>
         </Card>
       )}
 
-      {data.map((exp, index) => (
-        <Card key={exp.id} className="p-4 border border-gray-200">
-          <div className="flex justify-between items-start mb-4">
-            <h4 className="font-medium">Experience #{index + 1}</h4>
-            <Button
-              onClick={() => removeExperience(exp.id)}
-              size="sm"
-              variant="ghost"
-              className="text-red-500 hover:text-red-700"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <Label>Job Title *</Label>
-              <Input
-                value={exp.jobTitle}
-                onChange={(e) => updateExperience(exp.id, 'jobTitle', e.target.value)}
-                placeholder="Software Engineer"
-              />
-            </div>
-            <div>
-              <Label>Company *</Label>
-              <Input
-                value={exp.company}
-                onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
-                placeholder="Tech Corp Inc."
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div>
-              <Label>Location</Label>
-              <Input
-                value={exp.location}
-                onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
-                placeholder="New York, NY"
-              />
-            </div>
-            <div>
-              <Label>Start Date *</Label>
-              <Input
-                type="month"
-                value={exp.startDate}
-                onChange={(e) => updateExperience(exp.id, 'startDate', e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>End Date</Label>
-              <Input
-                type="month"
-                value={exp.endDate}
-                onChange={(e) => updateExperience(exp.id, 'endDate', e.target.value)}
-                disabled={exp.current}
-              />
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id={`current-${exp.id}`}
-                checked={exp.current}
-                onCheckedChange={(checked) => updateExperience(exp.id, 'current', checked)}
-              />
-              <Label htmlFor={`current-${exp.id}`}>I currently work here</Label>
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label>Key Achievements & Responsibilities *</Label>
+      {data.map((exp, index) => {
+        const startDateValidation = validateDate(exp.startDate);
+        const endDateValidation = validateDate(exp.endDate);
+        const dateRangeValidation = validateDateRange(exp);
+        
+        return (
+          <Card key={exp.id} className="p-6 border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+            <div className="flex justify-between items-start mb-4">
+              <h4 className="font-semibold text-lg">Experience #{index + 1}</h4>
               <Button
-                onClick={() => addAchievement(exp.id)}
+                onClick={() => removeExperience(exp.id)}
                 size="sm"
-                variant="outline"
-                type="button"
+                variant="ghost"
+                className="text-red-500 hover:text-red-700 hover:bg-red-50"
               >
-                <Plus className="h-3 w-3 mr-1" />
-                Add Point
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-            {exp.achievements.map((achievement, achIndex) => (
-              <div key={achIndex} className="flex gap-2 mb-2">
-                <Textarea
-                  value={achievement}
-                  onChange={(e) => updateAchievement(exp.id, achIndex, e.target.value)}
-                  placeholder="Developed and maintained web applications using React and Node.js..."
-                  rows={2}
-                  className="flex-1"
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <Label className="text-sm font-medium">Job Title *</Label>
+                <Input
+                  value={exp.jobTitle}
+                  onChange={(e) => updateExperience(exp.id, 'jobTitle', e.target.value)}
+                  placeholder="Senior Software Engineer"
+                  className="mt-1"
                 />
-                {exp.achievements.length > 1 && (
-                  <Button
-                    onClick={() => removeAchievement(exp.id, achIndex)}
-                    size="sm"
-                    variant="ghost"
-                    className="text-red-500 hover:text-red-700"
-                    type="button"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Company *</Label>
+                <Input
+                  value={exp.company}
+                  onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
+                  placeholder="Google Inc."
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div>
+                <Label className="text-sm font-medium">Location</Label>
+                <Input
+                  value={exp.location}
+                  onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
+                  placeholder="San Francisco, CA"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium flex items-center">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  Start Date *
+                </Label>
+                <Input
+                  type="month"
+                  value={exp.startDate}
+                  onChange={(e) => handleDateChange(exp.id, 'startDate', e.target.value)}
+                  min="1950-01"
+                  max={new Date().toISOString().slice(0, 7)}
+                  className={`mt-1 ${!startDateValidation.isValid && exp.startDate ? 'border-red-500' : ''}`}
+                />
+                {!startDateValidation.isValid && exp.startDate && (
+                  <div className="flex items-center mt-1 text-red-500 text-xs">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    {startDateValidation.message}
+                  </div>
                 )}
               </div>
-            ))}
-          </div>
-        </Card>
-      ))}
+              <div>
+                <Label className="text-sm font-medium flex items-center">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  End Date
+                </Label>
+                <Input
+                  type="month"
+                  value={exp.endDate}
+                  onChange={(e) => handleDateChange(exp.id, 'endDate', e.target.value)}
+                  disabled={exp.current}
+                  min="1950-01"
+                  max={new Date().toISOString().slice(0, 7)}
+                  className={`mt-1 ${!endDateValidation.isValid && exp.endDate ? 'border-red-500' : ''}`}
+                />
+                {!endDateValidation.isValid && exp.endDate && (
+                  <div className="flex items-center mt-1 text-red-500 text-xs">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    {endDateValidation.message}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`current-${exp.id}`}
+                  checked={exp.current}
+                  onCheckedChange={(checked) => updateExperience(exp.id, 'current', checked)}
+                />
+                <Label htmlFor={`current-${exp.id}`} className="text-sm font-medium">I currently work here</Label>
+              </div>
+            </div>
+
+            {!dateRangeValidation.isValid && exp.startDate && (exp.endDate || exp.current) && (
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <div className="flex items-center text-red-600 dark:text-red-400 text-sm">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  {dateRangeValidation.message}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-sm font-medium">Key Achievements & Responsibilities *</Label>
+                <Button
+                  onClick={() => addAchievement(exp.id)}
+                  size="sm"
+                  variant="outline"
+                  type="button"
+                  className="text-xs"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add Point
+                </Button>
+              </div>
+              {exp.achievements.map((achievement, achIndex) => (
+                <div key={achIndex} className="flex gap-2 mb-2">
+                  <Textarea
+                    value={achievement}
+                    onChange={(e) => updateAchievement(exp.id, achIndex, e.target.value)}
+                    placeholder="• Led a team of 5 developers to deliver a critical project 2 weeks ahead of schedule, resulting in $200K cost savings"
+                    rows={2}
+                    className="flex-1 text-sm"
+                  />
+                  {exp.achievements.length > 1 && (
+                    <Button
+                      onClick={() => removeAchievement(exp.id, achIndex)}
+                      size="sm"
+                      variant="ghost"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      type="button"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Card>
+        );
+      })}
     </div>
   );
 };

@@ -30,6 +30,11 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
   };
 
+  const formatYear = (year: string) => {
+    if (!year) return '';
+    return year;
+  };
+
   const getTemplateStyles = () => {
     switch (template) {
       case 'modern':
@@ -170,9 +175,9 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
         {data.personalInfo.summary && (
           <div className={styles.section}>
             <h2 className={`text-lg print:text-base font-bold ${styles.accent} mb-3`}>
-              PROFESSIONAL SUMMARY
+              EXECUTIVE SUMMARY
             </h2>
-            <p className={`${textColor} leading-relaxed`}>
+            <p className={`${textColor} leading-relaxed text-justify`}>
               {data.personalInfo.summary}
             </p>
           </div>
@@ -184,26 +189,26 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
             <h2 className={`text-lg print:text-base font-bold ${styles.accent} mb-3`}>
               PROFESSIONAL EXPERIENCE
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-5">
               {data.experience.map((exp) => (
                 <div key={exp.id}>
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h3 className={`font-bold ${headingColor}`}>{exp.jobTitle}</h3>
-                      <p className={`${styles.accent} font-medium`}>
+                      <h3 className={`font-bold text-base ${headingColor}`}>{exp.jobTitle}</h3>
+                      <p className={`${styles.accent} font-semibold`}>
                         {exp.company} {exp.location && `• ${exp.location}`}
                       </p>
                     </div>
-                    <div className={`${textColor} text-xs flex items-center`}>
+                    <div className={`${textColor} text-sm flex items-center font-medium`}>
                       <Calendar className="h-3 w-3 mr-1" />
                       {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
                     </div>
                   </div>
-                  <ul className={`space-y-1 ${textColor}`}>
+                  <ul className={`space-y-1.5 ${textColor} ml-2`}>
                     {exp.achievements.filter(ach => ach.trim()).map((achievement, index) => (
                       <li key={index} className="flex items-start">
-                        <span className={`${template === 'dark' || template === 'gradient' ? 'text-gray-500' : 'text-gray-400'} mr-2`}>•</span>
-                        <span className="flex-1">{achievement}</span>
+                        <span className={`${template === 'dark' || template === 'gradient' ? 'text-gray-500' : 'text-gray-400'} mr-2 mt-1`}>•</span>
+                        <span className="flex-1 leading-relaxed">{achievement}</span>
                       </li>
                     ))}
                   </ul>
@@ -219,22 +224,27 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
             <h2 className={`text-lg print:text-base font-bold ${styles.accent} mb-3`}>
               EDUCATION
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {data.education.map((edu) => (
                 <div key={edu.id}>
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className={`font-bold ${headingColor}`}>{edu.degree}</h3>
-                      <p className={`${styles.accent} font-medium`}>{edu.institution}</p>
+                      <p className={`${styles.accent} font-semibold`}>{edu.institution}</p>
                       {(edu.gpa || edu.honors) && (
-                        <p className={`${textColor} text-xs`}>
+                        <p className={`${textColor} text-sm`}>
                           {edu.gpa && `GPA: ${edu.gpa}`}
                           {edu.gpa && edu.honors && ' • '}
                           {edu.honors}
                         </p>
                       )}
                     </div>
-                    <div className={`${textColor} text-xs`}>{edu.graduationYear}</div>
+                    <div className={`${textColor} text-sm font-medium`}>
+                      {edu.startYear && edu.graduationYear ? 
+                        `${formatYear(edu.startYear)} - ${formatYear(edu.graduationYear)}` : 
+                        formatYear(edu.graduationYear)
+                      }
+                    </div>
                   </div>
                 </div>
               ))}
@@ -246,19 +256,19 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
         {(data.skills.technical.length > 0 || data.skills.soft.length > 0) && (
           <div className={styles.section}>
             <h2 className={`text-lg print:text-base font-bold ${styles.accent} mb-3`}>
-              SKILLS
+              CORE COMPETENCIES
             </h2>
             <div className="space-y-3">
               {data.skills.technical.length > 0 && (
                 <div>
-                  <h4 className={`font-semibold ${headingColor} mb-1`}>Technical Skills:</h4>
-                  <p className={textColor}>{data.skills.technical.join(' • ')}</p>
+                  <h4 className={`font-semibold ${headingColor} mb-1`}>Technical Expertise:</h4>
+                  <p className={`${textColor} leading-relaxed`}>{data.skills.technical.join(' • ')}</p>
                 </div>
               )}
               {data.skills.soft.length > 0 && (
                 <div>
-                  <h4 className={`font-semibold ${headingColor} mb-1`}>Core Competencies:</h4>
-                  <p className={textColor}>{data.skills.soft.join(' • ')}</p>
+                  <h4 className={`font-semibold ${headingColor} mb-1`}>Professional Skills:</h4>
+                  <p className={`${textColor} leading-relaxed`}>{data.skills.soft.join(' • ')}</p>
                 </div>
               )}
             </div>
@@ -273,11 +283,11 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
                 <h2 className={`text-lg print:text-base font-bold ${styles.accent} mb-3`}>
                   LANGUAGES
                 </h2>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {data.skills.languages.map((lang, index) => (
-                    <div key={index} className="flex justify-between">
-                      <span className={headingColor}>{lang.language}</span>
-                      <span className={textColor}>{lang.level}</span>
+                    <div key={index} className="flex justify-between items-center">
+                      <span className={`${headingColor} font-medium`}>{lang.language}</span>
+                      <span className={`${textColor} text-sm px-2 py-1 rounded bg-gray-100 dark:bg-gray-800`}>{lang.level}</span>
                     </div>
                   ))}
                 </div>
@@ -292,9 +302,9 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
                 <ul className="space-y-2">
                   {data.skills.certifications.map((cert, index) => (
                     <li key={index} className="flex items-start">
-                      <span className={`${template === 'dark' || template === 'gradient' ? 'text-gray-500' : 'text-gray-400'} mr-2`}>•</span>
+                      <span className={`${template === 'dark' || template === 'gradient' ? 'text-gray-500' : 'text-gray-400'} mr-2 mt-1`}>•</span>
                       <div className="flex-1">
-                        <span className={textColor}>{cert.name}</span>
+                        <span className={`${textColor} font-medium`}>{cert.name}</span>
                         {cert.link && (
                           <a 
                             href={cert.link} 

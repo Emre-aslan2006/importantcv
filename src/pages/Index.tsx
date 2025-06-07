@@ -11,7 +11,10 @@ import SkillsForm from '@/components/cv/SkillsForm';
 import CVPreview from '@/components/cv/CVPreview';
 import CoverLetterGenerator from '@/components/cv/CoverLetterGenerator';
 import { CVData, defaultCVData } from '@/types/cv';
-import { Download, Eye, FileText, Palette, Zap, Printer, Moon, Sun, Sparkles, Brain, Target } from 'lucide-react';
+import { Download, Eye, Printer, Moon, Sun, Sparkles, Brain, Target, FileText } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const Index = () => {
   const [cvData, setCvData] = useState<CVData>(defaultCVData);
@@ -19,6 +22,8 @@ const Index = () => {
   const [templateStyle, setTemplateStyle] = useState('modern');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showCoverLetter, setShowCoverLetter] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const { toast } = useToast();
 
   const updateCVData = (section: keyof CVData, data: any) => {
     setCvData(prev => ({
@@ -55,38 +60,71 @@ const Index = () => {
     }
   };
 
-  const handleDownloadPDF = () => {
-    const printContent = document.getElementById('cv-preview');
-    if (printContent) {
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>CV - ${cvData.personalInfo.fullName}</title>
-              <style>
-                body { margin: 0; font-family: Arial, sans-serif; }
-                @media print {
-                  body { margin: 0; }
-                  .no-print { display: none; }
-                }
-              </style>
-            </head>
-            <body>
-              ${printContent.innerHTML}
-              <script>
-                window.onload = function() {
-                  window.print();
-                  window.onafterprint = function() {
-                    window.close();
-                  };
-                };
-              </script>
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
+  const handleDownloadPDF = async () => {
+    setIsGeneratingPDF(true);
+    
+    try {
+      const element = document.getElementById('cv-preview');
+      if (!element) {
+        throw new Error('CV preview not found');
       }
+
+      // Show loading toast
+      toast({
+        title: "Generating PDF...",
+        description: "Please wait while we create your professional CV",
+      });
+
+      // Capture the element as canvas with high quality
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 0;
+
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      
+      // Generate filename
+      const fileName = `${cvData.personalInfo.fullName || 'CV'}_Resume.pdf`.replace(/[^a-zA-Z0-9_-]/g, '_');
+      
+      // Download the PDF
+      pdf.save(fileName);
+      
+      toast({
+        title: "PDF Downloaded Successfully! 🎉",
+        description: `Your professional CV has been saved as ${fileName}`,
+      });
+
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error Generating PDF",
+        description: "Please try again or use the print function as an alternative",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -95,10 +133,39 @@ const Index = () => {
     document.documentElement.classList.toggle('dark');
   };
 
+  const getCompletionPercentage = () => {
+    let completed = 0;
+    let total = 0;
+
+    // Personal info (40% weight)
+    if (cvData.personalInfo.fullName) completed += 8;
+    if (cvData.personalInfo.email) completed += 8;
+    if (cvData.personalInfo.phone) completed += 8;
+    if (cvData.personalInfo.location) completed += 8;
+    if (cvData.personalInfo.summary) completed += 8;
+    total += 40;
+
+    // Experience (30% weight)
+    if (cvData.experience.length > 0) completed += 30;
+    total += 30;
+
+    // Education (15% weight)
+    if (cvData.education.length > 0) completed += 15;
+    total += 15;
+
+    // Skills (15% weight)
+    if (cvData.skills.technical.length > 0 || cvData.skills.soft.length > 0) completed += 15;
+    total += 15;
+
+    return Math.round((completed / total) * 100);
+  };
+
+  const completionPercentage = getCompletionPercentage();
+
   return (
     <div className={`min-h-screen transition-all duration-500 ${isDarkMode ? 'dark bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'}`}>
       {/* Enhanced Header */}
-      <div className={`backdrop-blur-md border-b sticky top-0 z-10 transition-all duration-300 ${isDarkMode ? 'bg-gray-900/90 border-gray-700/50 shadow-xl' : 'bg-white/90 border-gray-200/50 shadow-lg'}`}>
+      <div className={`backdrop-blur-md border-b sticky top-0 z-10 transition-all duration-300 ${isDarkMode ? 'bg-gray-900/95 border-gray-700/50 shadow-xl' : 'bg-white/95 border-gray-200/50 shadow-lg'}`}>
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -115,33 +182,54 @@ const Index = () => {
                   Jobwise AI
                 </h1>
                 <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  Smart CV Builder • ATS Optimized • AI-Powered
+                  Elite CV Builder • ATS Optimized • AI-Powered
                 </p>
               </div>
             </div>
+            
             <div className="flex items-center space-x-4">
+              {/* Completion Progress */}
+              <div className={`hidden md:flex items-center space-x-2 px-4 py-2 rounded-full ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-sm border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <div className="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500"
+                    style={{ width: `${completionPercentage}%` }}
+                  ></div>
+                </div>
+                <span className="text-xs font-medium">{completionPercentage}%</span>
+              </div>
+
               <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm">
                 <Sun className="h-4 w-4" />
                 <Switch checked={isDarkMode} onCheckedChange={toggleDarkMode} />
                 <Moon className="h-4 w-4" />
               </div>
+              
               <Button 
                 variant="outline" 
                 onClick={() => setShowCoverLetter(!showCoverLetter)}
                 className="hidden md:flex bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 hover:from-purple-700 hover:to-pink-700"
               >
-                💬 Cover Letter AI
+                <FileText className="h-4 w-4 mr-2" />
+                Cover Letter AI
               </Button>
+              
               <Button variant="outline" onClick={handlePrint} className="hidden md:flex backdrop-blur-sm">
                 <Printer className="h-4 w-4 mr-2" />
                 Print
               </Button>
-              <Button onClick={handleDownloadPDF} className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg">
+              
+              <Button 
+                onClick={handleDownloadPDF} 
+                disabled={isGeneratingPDF}
+                className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg disabled:opacity-50"
+              >
                 <Download className="h-4 w-4 mr-2" />
-                Export PDF
+                {isGeneratingPDF ? 'Generating...' : 'Export PDF'}
               </Button>
+              
               <div className="flex items-center space-x-2 text-sm px-3 py-2 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                <Zap className="h-4 w-4" />
+                <Target className="h-4 w-4" />
                 <span className="font-medium">ATS Ready</span>
               </div>
             </div>
@@ -160,19 +248,19 @@ const Index = () => {
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-semibold flex items-center">
                     <Target className="h-5 w-5 mr-2 text-blue-600" />
-                    Build Your Professional CV
+                    Build Your Elite CV
                   </h2>
                   <select
                     value={templateStyle}
                     onChange={(e) => setTemplateStyle(e.target.value)}
                     className={`px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ${isDarkMode ? 'bg-gray-700/80 border-gray-600 text-white' : 'border-gray-300 bg-white/80'}`}
                   >
-                    <option value="modern">🎨 Modern</option>
-                    <option value="classic">📋 Classic</option>
-                    <option value="minimal">⚡ Minimal</option>
-                    <option value="creative">🌟 Creative</option>
-                    <option value="dark">🌙 Dark</option>
-                    <option value="gradient">🌈 Gradient</option>
+                    <option value="modern">🎨 Modern Elite</option>
+                    <option value="classic">📋 Executive</option>
+                    <option value="minimal">⚡ Minimalist Pro</option>
+                    <option value="creative">🌟 Creative Director</option>
+                    <option value="dark">🌙 Dark Professional</option>
+                    <option value="gradient">🌈 Gradient Luxury</option>
                   </select>
                 </div>
 
