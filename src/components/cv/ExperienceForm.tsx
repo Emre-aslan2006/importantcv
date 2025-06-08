@@ -41,43 +41,89 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
   };
 
   const validateDateRange = (exp: Experience): { isValid: boolean; message?: string } => {
-    if (!exp.startDate || (!exp.endDate && !exp.current)) return { isValid: true };
+    // Don't validate if dates are empty or incomplete
+    if (!exp.startDate || (!exp.endDate && !exp.current)) {
+      return { isValid: true };
+    }
     
-    const startDate = new Date(exp.startDate + '-01'); // Add day for proper parsing
-    const endDate = exp.current ? new Date() : new Date(exp.endDate + '-01');
-    
-    if (isNaN(startDate.getTime()) || (!exp.current && isNaN(endDate.getTime()))) {
+    try {
+      // Parse dates properly from YYYY-MM format
+      const [startYear, startMonth] = exp.startDate.split('-').map(Number);
+      
+      if (!startYear || !startMonth || startMonth < 1 || startMonth > 12) {
+        return { isValid: false, message: 'Please enter a valid start date' };
+      }
+      
+      const startDate = new Date(startYear, startMonth - 1, 1);
+      
+      if (exp.current) {
+        // If current job, just check if start date is reasonable
+        const currentDate = new Date();
+        const yearsDiff = (currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+        
+        if (startDate > currentDate) {
+          return { isValid: false, message: 'Start date cannot be in the future' };
+        }
+        
+        if (yearsDiff > 50) {
+          return { isValid: false, message: 'Work duration seems too long (>50 years)' };
+        }
+      } else if (exp.endDate) {
+        const [endYear, endMonth] = exp.endDate.split('-').map(Number);
+        
+        if (!endYear || !endMonth || endMonth < 1 || endMonth > 12) {
+          return { isValid: false, message: 'Please enter a valid end date' };
+        }
+        
+        const endDate = new Date(endYear, endMonth - 1, 1);
+        
+        // Check if end date is after start date
+        if (endDate <= startDate) {
+          return { isValid: false, message: 'End date must be after start date' };
+        }
+        
+        // Check if duration is reasonable
+        const yearsDiff = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+        if (yearsDiff > 50) {
+          return { isValid: false, message: 'Work duration seems too long (>50 years)' };
+        }
+        
+        // Check if end date is not too far in the future
+        const currentDate = new Date();
+        if (endDate > new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1)) {
+          return { isValid: false, message: 'End date cannot be more than 1 year in the future' };
+        }
+      }
+      
+      return { isValid: true };
+    } catch (error) {
       return { isValid: false, message: 'Please enter valid dates' };
     }
-    
-    if (startDate >= endDate) {
-      return { isValid: false, message: 'End date must be after start date' };
-    }
-    
-    const yearsDiff = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-    if (yearsDiff > 50) {
-      return { isValid: false, message: 'Work duration seems too long (>50 years)' };
-    }
-    
-    return { isValid: true };
   };
 
   const handleDateChange = (id: string, field: 'startDate' | 'endDate', value: string) => {
     updateExperience(id, field, value);
     
-    // Validate date range after update
-    const exp = data.find(e => e.id === id);
-    if (exp) {
-      const updatedExp = { ...exp, [field]: value };
-      const rangeValidation = validateDateRange(updatedExp);
-      if (!rangeValidation.isValid && updatedExp.startDate && (updatedExp.endDate || updatedExp.current)) {
-        toast({
-          title: "Date Range Issue",
-          description: rangeValidation.message,
-          variant: "destructive",
-        });
+    // Only validate and show toast if both dates are filled
+    setTimeout(() => {
+      const exp = data.find(e => e.id === id);
+      if (exp) {
+        const updatedExp = { ...exp, [field]: value };
+        const rangeValidation = validateDateRange(updatedExp);
+        
+        // Only show error if validation fails AND we have sufficient date info
+        if (!rangeValidation.isValid && 
+            updatedExp.startDate && 
+            (updatedExp.endDate || updatedExp.current) &&
+            rangeValidation.message) {
+          toast({
+            title: "Date Range Issue",
+            description: rangeValidation.message,
+            variant: "destructive",
+          });
+        }
       }
-    }
+    }, 100);
   };
 
   const addAchievement = (id: string) => {
