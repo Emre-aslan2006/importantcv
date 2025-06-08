@@ -210,21 +210,16 @@ const Index = () => {
                 <Moon className="h-4 w-4" />
               </div>
 
-              {/* Mobile Action Buttons */}
-              <div className="flex items-center space-x-2 lg:hidden">
-                <Button variant="outline" onClick={handlePrint} size="sm" className="backdrop-blur-sm">
-                  <Printer className="h-4 w-4" />
-                </Button>
-                
-                <Button 
-                  onClick={handleDownloadPDF} 
-                  disabled={isGeneratingPDF}
-                  size="sm"
-                  className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg disabled:opacity-50"
-                >
-                  <Download className="h-4 w-4" />
-                </Button>
-              </div>
+              {/* Export PDF Button - Always Visible */}
+              <Button 
+                onClick={handleDownloadPDF} 
+                disabled={isGeneratingPDF}
+                size="default"
+                className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg disabled:opacity-50 text-white border-0"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {isGeneratingPDF ? 'Generating...' : 'Export PDF'}
+              </Button>
 
               {/* Desktop Action Buttons */}
               <div className="hidden lg:flex items-center space-x-2">
@@ -241,15 +236,6 @@ const Index = () => {
                   <Printer className="h-4 w-4 mr-2" />
                   Print
                 </Button>
-                
-                <Button 
-                  onClick={handleDownloadPDF} 
-                  disabled={isGeneratingPDF}
-                  className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg disabled:opacity-50"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  {isGeneratingPDF ? 'Generating...' : 'Export PDF'}
-                </Button>
               </div>
               
               <div className="flex items-center space-x-2 text-sm px-3 py-2 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
@@ -260,19 +246,6 @@ const Index = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Mobile Export Button - Fixed at bottom for better visibility */}
-      <div className="lg:hidden fixed bottom-4 right-4 z-20">
-        <Button 
-          onClick={handleDownloadPDF} 
-          disabled={isGeneratingPDF}
-          size="lg"
-          className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-2xl disabled:opacity-50 rounded-full"
-        >
-          <Download className="h-5 w-5 mr-2" />
-          {isGeneratingPDF ? 'Generating...' : 'Export PDF'}
-        </Button>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
