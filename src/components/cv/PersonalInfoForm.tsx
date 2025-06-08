@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { PersonalInfo } from '@/types/cv';
 import { Upload, User } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { validateUrl, sanitizeUrl, validateImageFile } from '@/utils/security';
 
 interface PersonalInfoFormProps {
   data: PersonalInfo;
@@ -15,21 +17,75 @@ interface PersonalInfoFormProps {
 
 const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChange }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const handleChange = (field: keyof PersonalInfo, value: string) => {
     onChange({ ...data, [field]: value });
   };
 
+  const handleUrlChange = (field: keyof PersonalInfo, value: string) => {
+    if (value && !validateUrl(value)) {
+      toast({
+        title: "Invalid URL",
+        description: "Please enter a valid URL",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const sanitizedUrl = sanitizeUrl(value);
+    onChange({ ...data, [field]: sanitizedUrl });
+  };
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        handleChange('profilePicture', result);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Validate the file
+    const validation = validateImageFile(file);
+    if (!validation.isValid) {
+      toast({
+        title: "Invalid File",
+        description: validation.error,
+        variant: "destructive",
+      });
+      // Clear the input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      
+      // Additional validation: check if the result is a valid data URL
+      if (!result.startsWith('data:image/')) {
+        toast({
+          title: "Invalid Image",
+          description: "The uploaded file is not a valid image",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      handleChange('profilePicture', result);
+      toast({
+        title: "Image Uploaded",
+        description: "Profile picture uploaded successfully",
+      });
+    };
+    
+    reader.onerror = () => {
+      toast({
+        title: "Upload Error",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+    };
+    
+    reader.readAsDataURL(file);
   };
 
   const triggerFileUpload = () => {
@@ -38,6 +94,9 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChange }) =
 
   const removeProfilePicture = () => {
     handleChange('profilePicture', '');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -69,13 +128,13 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChange }) =
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/jpg,image/png,image/webp"
           onChange={handleImageUpload}
           className="hidden"
         />
         
         <p className="text-xs text-gray-500 text-center">
-          Upload a professional headshot (JPG, PNG, max 5MB)
+          Upload a professional headshot (JPEG, PNG, WebP - max 5MB)
         </p>
       </div>
 
@@ -128,7 +187,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChange }) =
           <Input
             id="linkedin"
             value={data.linkedin}
-            onChange={(e) => handleChange('linkedin', e.target.value)}
+            onChange={(e) => handleUrlChange('linkedin', e.target.value)}
             placeholder="linkedin.com/in/johndoe"
           />
         </div>
@@ -137,7 +196,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChange }) =
           <Input
             id="website"
             value={data.website || ''}
-            onChange={(e) => handleChange('website', e.target.value)}
+            onChange={(e) => handleUrlChange('website', e.target.value)}
             placeholder="www.johndoe.com"
           />
         </div>

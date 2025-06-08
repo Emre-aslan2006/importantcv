@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,7 +35,7 @@ const Index = () => {
   const handlePrint = () => {
     const printContent = document.getElementById('cv-preview');
     if (printContent) {
-      const printWindow = window.open('', '_blank');
+      const printWindow = window.open('', '_blank', 'noopener,noreferrer');
       if (printWindow) {
         printWindow.document.write(`
           <html>
@@ -104,8 +105,12 @@ const Index = () => {
 
       pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
       
-      // Generate filename
-      const fileName = `${cvData.personalInfo.fullName || 'CV'}_Resume.pdf`.replace(/[^a-zA-Z0-9_-]/g, '_');
+      // Generate filename with security in mind - sanitize user input
+      const safeName = (cvData.personalInfo.fullName || 'CV')
+        .replace(/[^a-zA-Z0-9_-\s]/g, '')
+        .replace(/\s+/g, '_')
+        .substring(0, 50); // Limit length
+      const fileName = `${safeName}_Resume.pdf`;
       
       // Download the PDF
       pdf.save(fileName);
