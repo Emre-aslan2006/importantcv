@@ -152,7 +152,6 @@ const Index = () => {
 
   return (
     <div className={`min-h-screen transition-all duration-500 ${isDarkMode ? 'dark bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'}`}>
-      {/* Always show header at the top */}
       <Header
         isDarkMode={isDarkMode}
         toggleDarkMode={toggleDarkMode}
@@ -164,7 +163,6 @@ const Index = () => {
         setShowCoverLetter={setShowCoverLetter}
       />
 
-      {/* Main content area */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {showCoverLetter ? (
           <CoverLetterGenerator cvData={cvData} isDarkMode={isDarkMode} onClose={() => setShowCoverLetter(false)} />
