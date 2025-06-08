@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Experience } from '@/types/cv';
-import { Plus, Trash2, Briefcase, AlertTriangle, Calendar } from 'lucide-react';
+import { Plus, Trash2, Briefcase, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ExperienceFormProps {
@@ -40,35 +40,11 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
     onChange(data.filter(exp => exp.id !== id));
   };
 
-  const validateDate = (dateString: string): { isValid: boolean; message?: string } => {
-    if (!dateString) return { isValid: true };
-    
-    const date = new Date(dateString);
-    const currentDate = new Date();
-    const minDate = new Date('1950-01-01');
-    const maxDate = new Date();
-    maxDate.setFullYear(maxDate.getFullYear() + 2);
-    
-    if (isNaN(date.getTime())) {
-      return { isValid: false, message: 'Invalid date format' };
-    }
-    
-    if (date < minDate) {
-      return { isValid: false, message: 'Date seems too early (before 1950)' };
-    }
-    
-    if (date > maxDate) {
-      return { isValid: false, message: 'Date seems too far in the future' };
-    }
-    
-    return { isValid: true };
-  };
-
   const validateDateRange = (exp: Experience): { isValid: boolean; message?: string } => {
     if (!exp.startDate || (!exp.endDate && !exp.current)) return { isValid: true };
     
-    const startDate = new Date(exp.startDate);
-    const endDate = exp.current ? new Date() : new Date(exp.endDate);
+    const startDate = new Date(exp.startDate + '-01'); // Add day for proper parsing
+    const endDate = exp.current ? new Date() : new Date(exp.endDate + '-01');
     
     if (isNaN(startDate.getTime()) || (!exp.current && isNaN(endDate.getTime()))) {
       return { isValid: false, message: 'Please enter valid dates' };
@@ -89,17 +65,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
   const handleDateChange = (id: string, field: 'startDate' | 'endDate', value: string) => {
     updateExperience(id, field, value);
     
-    // Validate the date
-    const dateValidation = validateDate(value);
-    if (!dateValidation.isValid && value) {
-      toast({
-        title: "Invalid Date",
-        description: dateValidation.message,
-        variant: "destructive",
-      });
-    }
-    
-    // Validate date range
+    // Validate date range after update
     const exp = data.find(e => e.id === id);
     if (exp) {
       const updatedExp = { ...exp, [field]: value };
@@ -161,8 +127,6 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
       )}
 
       {data.map((exp, index) => {
-        const startDateValidation = validateDate(exp.startDate);
-        const endDateValidation = validateDate(exp.endDate);
         const dateRangeValidation = validateDateRange(exp);
         
         return (
@@ -206,7 +170,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
                 <Input
                   value={exp.location}
                   onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
-                  placeholder="San Francisco, CA"
+                  placeholder="London, UK"
                   className="mt-1"
                 />
               </div>
@@ -221,14 +185,8 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
                   onChange={(e) => handleDateChange(exp.id, 'startDate', e.target.value)}
                   min="1950-01"
                   max={new Date().toISOString().slice(0, 7)}
-                  className={`mt-1 ${!startDateValidation.isValid && exp.startDate ? 'border-red-500' : ''}`}
+                  className="mt-1"
                 />
-                {!startDateValidation.isValid && exp.startDate && (
-                  <div className="flex items-center mt-1 text-red-500 text-xs">
-                    <AlertTriangle className="h-3 w-3 mr-1" />
-                    {startDateValidation.message}
-                  </div>
-                )}
               </div>
               <div>
                 <Label className="text-sm font-medium flex items-center">
@@ -242,14 +200,8 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
                   disabled={exp.current}
                   min="1950-01"
                   max={new Date().toISOString().slice(0, 7)}
-                  className={`mt-1 ${!endDateValidation.isValid && exp.endDate ? 'border-red-500' : ''}`}
+                  className="mt-1"
                 />
-                {!endDateValidation.isValid && exp.endDate && (
-                  <div className="flex items-center mt-1 text-red-500 text-xs">
-                    <AlertTriangle className="h-3 w-3 mr-1" />
-                    {endDateValidation.message}
-                  </div>
-                )}
               </div>
             </div>
 
@@ -267,7 +219,6 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }) => {
             {!dateRangeValidation.isValid && exp.startDate && (exp.endDate || exp.current) && (
               <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <div className="flex items-center text-red-600 dark:text-red-400 text-sm">
-                  <AlertTriangle className="h-4 w-4 mr-2" />
                   {dateRangeValidation.message}
                 </div>
               </div>
