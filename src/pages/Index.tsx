@@ -191,9 +191,9 @@ const Index = () => {
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              {/* Completion Progress */}
-              <div className={`hidden md:flex items-center space-x-2 px-4 py-2 rounded-full ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-sm border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+            <div className="flex items-center space-x-2 lg:space-x-4">
+              {/* Completion Progress - Hidden on mobile */}
+              <div className={`hidden lg:flex items-center space-x-2 px-4 py-2 rounded-full ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-sm border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div className="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500"
@@ -203,42 +203,76 @@ const Index = () => {
                 <span className="text-xs font-medium">{completionPercentage}%</span>
               </div>
 
+              {/* Dark Mode Toggle */}
               <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm">
                 <Sun className="h-4 w-4" />
                 <Switch checked={isDarkMode} onCheckedChange={toggleDarkMode} />
                 <Moon className="h-4 w-4" />
               </div>
-              
-              <Button 
-                variant="outline" 
-                onClick={() => setShowCoverLetter(!showCoverLetter)}
-                className="hidden md:flex bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 hover:from-purple-700 hover:to-pink-700"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Cover Letter AI
-              </Button>
-              
-              <Button variant="outline" onClick={handlePrint} className="hidden md:flex backdrop-blur-sm">
-                <Printer className="h-4 w-4 mr-2" />
-                Print
-              </Button>
-              
-              <Button 
-                onClick={handleDownloadPDF} 
-                disabled={isGeneratingPDF}
-                className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg disabled:opacity-50"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                {isGeneratingPDF ? 'Generating...' : 'Export PDF'}
-              </Button>
+
+              {/* Mobile Action Buttons */}
+              <div className="flex items-center space-x-2 lg:hidden">
+                <Button variant="outline" onClick={handlePrint} size="sm" className="backdrop-blur-sm">
+                  <Printer className="h-4 w-4" />
+                </Button>
+                
+                <Button 
+                  onClick={handleDownloadPDF} 
+                  disabled={isGeneratingPDF}
+                  size="sm"
+                  className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg disabled:opacity-50"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Desktop Action Buttons */}
+              <div className="hidden lg:flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowCoverLetter(!showCoverLetter)}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 hover:from-purple-700 hover:to-pink-700"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Cover Letter AI
+                </Button>
+                
+                <Button variant="outline" onClick={handlePrint} className="backdrop-blur-sm">
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print
+                </Button>
+                
+                <Button 
+                  onClick={handleDownloadPDF} 
+                  disabled={isGeneratingPDF}
+                  className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-lg disabled:opacity-50"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  {isGeneratingPDF ? 'Generating...' : 'Export PDF'}
+                </Button>
+              </div>
               
               <div className="flex items-center space-x-2 text-sm px-3 py-2 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
                 <Target className="h-4 w-4" />
-                <span className="font-medium">ATS Ready</span>
+                <span className="font-medium hidden sm:inline">ATS Ready</span>
+                <span className="font-medium sm:hidden">ATS</span>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Mobile Export Button - Fixed at bottom for better visibility */}
+      <div className="lg:hidden fixed bottom-4 right-4 z-20">
+        <Button 
+          onClick={handleDownloadPDF} 
+          disabled={isGeneratingPDF}
+          size="lg"
+          className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 shadow-2xl disabled:opacity-50 rounded-full"
+        >
+          <Download className="h-5 w-5 mr-2" />
+          {isGeneratingPDF ? 'Generating...' : 'Export PDF'}
+        </Button>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
