@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Header from '@/components/layout/Header';
 import FormSection from '@/components/layout/FormSection';
@@ -63,13 +62,11 @@ const Index = () => {
         throw new Error('CV preview not found');
       }
 
-      // Show loading toast
       toast({
         title: "Generating PDF...",
         description: "Please wait while we create your professional CV",
       });
 
-      // Capture the element as canvas with high quality
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
@@ -82,7 +79,6 @@ const Index = () => {
 
       const imgData = canvas.toDataURL('image/png');
       
-      // Create PDF
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -99,14 +95,12 @@ const Index = () => {
 
       pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
       
-      // Generate filename with security in mind - sanitize user input
       const safeName = (cvData.personalInfo.fullName || 'CV')
         .replace(/[^a-zA-Z0-9_-\s]/g, '')
         .replace(/\s+/g, '_')
-        .substring(0, 50); // Limit length
+        .substring(0, 50);
       const fileName = `${safeName}_Resume.pdf`;
       
-      // Download the PDF
       pdf.save(fileName);
       
       toast({
@@ -135,7 +129,6 @@ const Index = () => {
     let completed = 0;
     let total = 0;
 
-    // Personal info (40% weight)
     if (cvData.personalInfo.fullName) completed += 8;
     if (cvData.personalInfo.email) completed += 8;
     if (cvData.personalInfo.phone) completed += 8;
@@ -143,15 +136,12 @@ const Index = () => {
     if (cvData.personalInfo.summary) completed += 8;
     total += 40;
 
-    // Experience (30% weight)
     if (cvData.experience.length > 0) completed += 30;
     total += 30;
 
-    // Education (15% weight)
     if (cvData.education.length > 0) completed += 15;
     total += 15;
 
-    // Skills (15% weight)
     if (cvData.skills.technical.length > 0 || cvData.skills.soft.length > 0) completed += 15;
     total += 15;
 
