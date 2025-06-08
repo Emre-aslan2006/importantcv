@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CVData } from '@/types/cv';
 import { Mail, Phone, MapPin, Linkedin, Globe, Calendar, ExternalLink } from 'lucide-react';
@@ -17,7 +16,8 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
       const [year, month] = dateString.split('-');
       if (year && month) {
         const date = new Date(parseInt(year), parseInt(month) - 1);
-        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+        // Use international format: MMM YYYY (e.g., "Jan 2023")
+        return date.toLocaleDateString('en-GB', { year: 'numeric', month: 'short' });
       }
     }
     
@@ -27,7 +27,8 @@ const CVPreview: React.FC<CVPreviewProps> = ({ data, template }) => {
       return dateString; // Return original if can't parse
     }
     
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+    // Use international format: MMM YYYY
+    return date.toLocaleDateString('en-GB', { year: 'numeric', month: 'short' });
   };
 
   const formatYear = (year: string) => {
